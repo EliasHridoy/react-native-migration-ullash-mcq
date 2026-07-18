@@ -1,176 +1,204 @@
-# Ullash Live MCQ — React Native Migration
+# Ullash Live MCQ
 
-> **Flutter → Expo (React Native + TypeScript)**  
-> Supabase Project ID: `bmqdmanvpbrerlgisald` — **backend unchanged**
+A cross-platform MCQ exam preparation app built with **Expo SDK 52** (React Native + TypeScript) and **Supabase** backend.
 
----
-
-## 📐 Architecture at a Glance
-
-```
-React Native (Expo SDK 52)
-  ├── expo-router      (navigation)
-  ├── zustand          (client state)
-  ├── react-query      (server data)
-  ├── nativewind       (styling)
-  └── @supabase/supabase-js (backend — existing project, NO changes)
-```
+> Originally migrated from Flutter to React Native.
 
 ---
 
-## 🗂️ Migration Documents
+## Tech Stack
 
-Each document is a **self-contained task brief** for one agent. Read the one assigned to you and execute it fully.
-
-| Agent | File | Covers |
-|-------|------|--------|
-| 1 | [01_PROJECT_SETUP.md](./agent-instructions/01_PROJECT_SETUP.md) | Expo init, packages, folder structure |
-| 2 | [02_DESIGN_SYSTEM.md](./agent-instructions/02_DESIGN_SYSTEM.md) | Colors, typography, GlassCard, GradientButton |
-| 3 | [03_CORE_INFRASTRUCTURE.md](./agent-instructions/03_CORE_INFRASTRUCTURE.md) | Supabase client, constants, scoring utils, routing |
-| 4 | [04_DATABASE_MIGRATION.md](./agent-instructions/04_DATABASE_MIGRATION.md) | Schema verification, TypeScript types (NO DB changes) |
-| 5 | [05_AUTH_FEATURE.md](./agent-instructions/05_AUTH_FEATURE.md) | Login, Register, Google/Facebook OAuth |
-| 6 | [06_PROFILE_FEATURE.md](./agent-instructions/06_PROFILE_FEATURE.md) | Profile screen, avatar upload, auto-create |
-| 7 | [07_BOARD_SUBJECT_HIERARCHY.md](./agent-instructions/07_BOARD_SUBJECT_HIERARCHY.md) | Board → Subject → Chapter → Topic navigation |
-| 8 | [08_QUESTION_BANK.md](./agent-instructions/08_QUESTION_BANK.md) | Question API, status tracking, smart search |
-| 9 | [09_STUDY_MATERIALS.md](./agent-instructions/09_STUDY_MATERIALS.md) | PDFs, videos, 60s signed URLs, premium gating |
-| 10 | [10_PRACTICE_EXAM.md](./agent-instructions/10_PRACTICE_EXAM.md) | Practice exam engine, shuffle, progress tracking |
-| 11 | [11_LIVE_EXAM.md](./agent-instructions/11_LIVE_EXAM.md) | Live exam, clock sync, Realtime, anti-cheat |
-| 12 | [12_SCORING_AND_RESULTS.md](./agent-instructions/12_SCORING_AND_RESULTS.md) | Result analysis, topic breakdown, history |
-| 13 | [13_LEADERBOARD.md](./agent-instructions/13_LEADERBOARD.md) | Leaderboard tabs, podium, real-time updates |
-| 14 | [14_AI_TUTOR_AND_PEDAGOGY.md](./agent-instructions/14_AI_TUTOR_AND_PEDAGOGY.md) | AI Mitro hints, Ogroshor loop, micro-practice |
-| 15 | [15_SUBSCRIPTION_AND_PAYWALL.md](./agent-instructions/15_SUBSCRIPTION_AND_PAYWALL.md) | SubscriptionGate, PaywallScreen, entitlement |
-| 16 | [16_BKASH_PAYMENT.md](./agent-instructions/16_BKASH_PAYMENT.md) | bKash 3-step payment, IPN, transaction history |
-| 17 | [17_PENDING_FEATURES.md](./agent-instructions/17_PENDING_FEATURES.md) | OTP login, Rocket MFS, Nagad MFS, Sentry, tests |
-| Ref | [FLUTTER_TO_RN_MAPPING.md](./agent-instructions/FLUTTER_TO_RN_MAPPING.md) | Full Flutter → React Native concept mapping |
-| Ref | [00_OVERVIEW_AND_STACK.md](./agent-instructions/00_OVERVIEW_AND_STACK.md) | Full architecture overview |
+| Layer | Technology |
+|-------|-----------|
+| Framework | Expo SDK 52, React 18.3, React Native 0.76 |
+| Navigation | expo-router (file-based) |
+| Client State | zustand |
+| Server State | @tanstack/react-query |
+| Styling | NativeWind (Tailwind CSS) |
+| Backend | Supabase (PostgreSQL, RLS, Realtime, Edge Functions) |
+| Animations | react-native-reanimated v3 |
+| Auth | expo-auth-session (Google, Facebook), email/password |
+| Fonts | Inter via @expo-google-fonts/inter |
+| Payments | bKash (3-step IPN), Rocket, Nagad |
+| Monitoring | Sentry |
 
 ---
 
-## ⚠️ CRITICAL RULES FOR ALL AGENTS
+## Features
 
-1. **DO NOT modify the `supabase/` folder** — all DB migrations are already applied.
-2. **DO NOT rename Supabase tables, RPCs, or Edge Functions** — only the frontend changes.
-3. **DO use TypeScript** with strict mode — no `any` types unless unavoidable.
-4. **DO use path aliases** — `@/` maps to `src/`, `@app/` maps to `app/`.
-5. **DO read `FLUTTER_TO_RN_MAPPING.md`** before implementing to find your exact pattern.
-
----
-
-## 🔀 Agent Dependency Graph
-
-```
-Agent 1 (Setup) ─────────────────────────────────────────────────────────────┐
-Agent 2 (Design) ──────────┐                                                 │
-Agent 3 (Core) ─────────────────────────┐                                    │
-Agent 4 (DB Types) ─────────────────────┼──────────────────────┐            │
-                                         │                        │            │
-Agent 5 (Auth) ──────────────────────────┼────┐                  │            │
-Agent 6 (Profile) ──────────────────────┘    │                  │            │
-Agent 7 (Hierarchy) ──────────────────────────┼────┐             │            │
-Agent 8 (Questions) ──────────────────────────┼────┼─────┐       │            │
-Agent 9 (Study Materials) ────────────────────┘    │     │       │            │
-Agent 10 (Practice Exam) ────────────────────────────┼────┼───┐   │            │
-Agent 11 (Live Exam) ─────────────────────────────────┘    │   │   │            │
-Agent 12 (Scoring) ──────────────────────────────────────────┘   │   │            │
-Agent 13 (Leaderboard) ──────────────────────────────────────────┘   │            │
-Agent 14 (AI + Pedagogy) ─────────────────────────────────────────────┘            │
-Agent 15 (Subscription) ──────────────────────────────────────────────────────────┐ │
-Agent 16 (bKash Payment) ──────────────────────────────────────────────────────────┘ │
-Agent 17 (Pending Features) ─────────────────────────────────────────────────────────┘
-```
+- **Authentication** – Email/password, Google OAuth, Facebook OAuth, forgot password, phone OTP (pending)
+- **Profile** – View/edit profile, avatar upload via expo-image-picker
+- **Board/Subject/Chapter/Topic Hierarchy** – Multi-level navigation for exam content
+- **Practice Exams** – Shuffled questions, progress tracking, timed mode
+- **Live Exams** – Real-time clock sync via Supabase Realtime, anti-cheat measures
+- **Question Bank** – Smart search, status tracking (answered, bookmarked, incorrect)
+- **AI Tutor (Mitro)** – AI-powered hints and explanations
+- **Ogroshor Pedagogical Loop** – Weakness analysis, micro-practice queue
+- **Scoring & Results** – Topic-wise breakdown, exam history, weakness vectors
+- **Leaderboard** – Tabbed leaderboard with podium, real-time updates
+- **Study Materials** – PDFs and videos with 60s signed URLs, premium gating
+- **Subscription** – RevenueCat entitlements, SubscriptionGate component, PaywallScreen
+- **Payments** – bKash 3-step IPN payment flow, Rocket MFS, Nagad MFS
+- **Micro-Practice** – Targeted practice on weak topics
 
 ---
 
-## 🗺️ Final Folder Structure
+## Getting Started
 
-After all agents complete, the app directory should look like:
+### Prerequisites
+
+- Node.js 18+
+- Expo CLI (`npx expo`)
+- iOS Simulator (macOS) or Android Emulator / physical device
+
+### Setup
+
+```bash
+# Install dependencies
+npm install
+
+# Copy environment variables and fill in real values
+cp .env.example .env
+```
+
+Required environment variables in `.env`:
+
+| Variable | Description |
+|----------|-------------|
+| `EXPO_PUBLIC_SUPABASE_URL` | Supabase project URL |
+| `EXPO_PUBLIC_SUPABASE_ANON_KEY` | Supabase anonymous key |
+| `EXPO_PUBLIC_AUTH_REDIRECT_URI` | OAuth redirect URI (e.g. `com.livemcq.liveexam://login-callback`) |
+| `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` | Google OAuth web client ID |
+| `EXPO_PUBLIC_FACEBOOK_APP_ID` | Facebook app ID |
+| `EXPO_PUBLIC_REVENUECAT_ANDROID_KEY` | RevenueCat Android key |
+| `EXPO_PUBLIC_REVENUECAT_IOS_KEY` | RevenueCat iOS key |
+
+### Development
+
+```bash
+npm start          # Start Expo dev server
+npm run android    # Run on Android
+npm run ios        # Run on iOS
+npm run web        # Run in browser
+```
+
+### Testing
+
+```bash
+npm test           # Run Jest test suite
+```
+
+---
+
+## Project Structure
 
 ```
-react-native-migration-ullash-mcq/
-├── app/                          # Expo Router pages
-│   ├── _layout.tsx               # Root layout (QueryClient, fonts, auth listener)
-│   ├── index.tsx                 # Splash/redirect
-│   ├── (auth)/
-│   │   ├── _layout.tsx
-│   │   ├── login.tsx
-│   │   ├── register.tsx
-│   │   ├── forgot-password.tsx
-│   │   └── phone-login.tsx       # Agent 17
-│   └── (app)/
-│       ├── _layout.tsx           # Tab navigator
-│       ├── home/
-│       │   ├── index.tsx
-│       │   └── records.tsx
-│       ├── profile/
-│       │   ├── index.tsx
-│       │   └── edit.tsx
-│       ├── leaderboard/
-│       │   └── index.tsx
-│       ├── exam/
-│       │   ├── board-selection.tsx
-│       │   ├── subject-selection.tsx
-│       │   ├── chapter-selection.tsx
-│       │   ├── practice/
-│       │   │   └── [params].tsx
-│       │   ├── live/
-│       │   │   └── [examId].tsx
-│       │   ├── result/
-│       │   │   └── [examId].tsx
-│       │   └── study-materials/
-│       │       └── [topicId].tsx
-│       ├── question-search.tsx
-│       ├── ai-search.tsx
-│       ├── micro-practice.tsx
-│       ├── paywall.tsx
-│       ├── bkash-payment.tsx
-│       ├── rocket-payment.tsx    # Agent 17
-│       └── nagad-payment.tsx    # Agent 17
-│
-├── src/
-│   ├── core/
-│   │   ├── supabase/
-│   │   │   ├── client.ts
-│   │   │   ├── database.types.ts  # Generated
-│   │   │   └── types.ts
-│   │   ├── constants/
-│   │   │   ├── app.constants.ts
-│   │   │   └── supabase.constants.ts
-│   │   ├── theme/
-│   │   │   ├── colors.ts
-│   │   │   ├── typography.ts
-│   │   │   └── spacing.ts
-│   │   ├── utils/
-│   │   │   └── scoring.utils.ts
-│   │   └── errors/
-│   │       └── failures.ts
-│   │
-│   ├── components/               # Shared UI components
-│   │   ├── GlassCard.tsx
-│   │   ├── GradientButton.tsx
-│   │   ├── ShimmerLoader.tsx
-│   │   ├── DifficultyBadge.tsx
-│   │   ├── HintButton.tsx
-│   │   └── SubscriptionGate.tsx
-│   │
-│   └── features/                 # Feature modules
-│       ├── auth/
-│       ├── profile/
-│       ├── board_selection/
-│       ├── subject/
-│       ├── exam/
-│       ├── result/
-│       ├── leaderboard/
-│       ├── ai_tutor/
-│       ├── pedagogy/
-│       ├── subscription/
-│       ├── payment/
-│       └── study_material/
-│
-├── global.css                    # NativeWind base styles
-├── tailwind.config.js
-├── babel.config.js
-├── tsconfig.json
-├── app.json
-├── .env                          # Real values (gitignored)
-└── .env.example                  # Template committed to repo
+app/                          # Expo Router pages (file-based routing)
+├── _layout.tsx               # Root layout (providers, fonts, auth listener)
+├── index.tsx                 # Splash/redirect
+├── (auth)/                   # Auth screens
+│   ├── login.tsx
+│   ├── register.tsx
+│   ├── forgot-password.tsx
+│   └── phone-login.tsx
+└── (app)/                    # Authenticated app screens
+    ├── home/
+    ├── profile/
+    ├── leaderboard/
+    ├── exam/
+    │   ├── practice/
+    │   ├── live/
+    │   ├── result/
+    │   └── study-materials/
+    ├── question-search.tsx
+    ├── ai-search.tsx
+    ├── micro-practice.tsx
+    ├── paywall.tsx
+    ├── bkash-payment.tsx
+    ├── rocket-payment.tsx
+    └── nagad-payment.tsx
+
+src/
+├── core/                     # Cross-cutting infrastructure
+│   ├── supabase/             # Client, types, database types
+│   ├── constants/            # App & Supabase constants
+│   ├── theme/                # Colors, typography, spacing
+│   ├── utils/                # Scoring engine, helpers
+│   └── errors/               # Error/failure types
+├── components/               # Shared UI components
+│   ├── GlassCard.tsx
+│   ├── GradientButton.tsx
+│   ├── ShimmerLoader.tsx
+│   ├── DifficultyBadge.tsx
+│   ├── HintButton.tsx
+│   └── SubscriptionGate.tsx
+└── features/                 # Feature modules (feature-first architecture)
+    ├── auth/
+    ├── profile/
+    ├── board_selection/
+    ├── subject/
+    ├── exam/
+    ├── result/
+    ├── leaderboard/
+    ├── ai_tutor/
+    ├── pedagogy/
+    ├── subscription/
+    ├── payment/
+    └── study_material/
 ```
+
+Each feature module follows a consistent structure:
+
+```
+feature/
+├── api/          # Supabase/Axios API calls
+├── hooks/        # React hooks (when applicable)
+├── store/        # Zustand stores
+├── types/        # TypeScript types/interfaces
+├── components/   # Feature-specific components
+└── utils/        # Feature-specific utilities
+```
+
+---
+
+## Architecture
+
+**Feature-first clean architecture** with clear separation of concerns:
+
+- **Pages** (`app/`) – Route definitions, minimal logic, delegate to features
+- **Features** (`src/features/`) – Self-contained modules with their own API layer, state, types, and components
+- **Core** (`src/core/`) – Shared infrastructure (Supabase client, theme, constants, utilities)
+- **Components** (`src/components/`) – Reusable presentational components
+
+**State management:**
+- **Server state** – @tanstack/react-query (caching, refetching, optimistic updates)
+- **Client state** – zustand (auth session, exam progress, UI state)
+- **Secure storage** – expo-secure-store for tokens
+
+---
+
+## Path Aliases
+
+| Alias | Maps to |
+|-------|---------|
+| `@/` | `./src/` |
+| `@app/` | `./app/` |
+
+---
+
+## Build
+
+Production builds use EAS Build:
+
+```bash
+npx eas build --platform android --profile production
+npx eas build --platform ios --profile production
+```
+
+Configured profiles: `development`, `development-simulator`, `preview`, `production`.
+
+---
+
+## License
+
+Private – All rights reserved.
