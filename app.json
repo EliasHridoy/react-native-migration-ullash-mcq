@@ -1,0 +1,52 @@
+{
+  "expo": {
+    "name": "Ullash Live MCQ",
+    "slug": "ullash-live-mcq",
+    "scheme": "com.livemcq.liveexam",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "splash": {
+      "backgroundColor": "#0A0A1A"
+    },
+    "android": {
+      "package": "com.livemcq.live_exam",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#6C5CE7"
+      }
+    },
+    "ios": {
+      "bundleIdentifier": "com.livemcq.liveExam",
+      "supportsTablet": false
+    },
+    "plugins": [
+      "expo-router",
+      "expo-font",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow Ullash to access your photos for profile picture."
+        }
+      ],
+      "expo-asset",
+      "@sentry/react-native",
+      "expo-secure-store",
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "useFrameworks": "static",
+            "flipper": false
+          },
+          "android": {
+            "usesInsecureHttp": true
+          }
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
